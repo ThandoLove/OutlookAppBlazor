@@ -1,0 +1,366 @@
+@using OperationalWorkspaceUI.UIState
+@using OperationalWorkspaceUI.UIServices
+@using OperationalWorkspaceUI.Components.Shared
+@using OperationalWorkspaceApplication.Dtos
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using OperationalWorkspaceApplication.Responses.WorkspaceContextResponse
+@inject UIStateContainer StateContainer
+@inject IWorkspaceApiService ApiService
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+
+@if (StateContainer.IsAuthenticated && StateContainer.CurrentContextResponse != null)
+{
+    var ctx = StateContainer.CurrentContextResponse;
+
+    @if (_isDeviceOffline || _isOperationPending || !string.IsNullOrEmpty(_uiActionErrorAlert))
+    {
+        <!-- Resilient Offline/Loading State Alerts (Section 9) -->
+        <ActionableFeedbackCard IsOffline="_isDeviceOffline"
+                                IsLoading="_isOperationPending"
+                                LoadingMessage="@_currentProgressiveStatusText"
+                                ErrorMessage="@_uiActionErrorAlert"
+                                OnRetryCallback="ForceOnDemandLedgerSync" />
+    }
+
+    @if (ctx.Customer != null && !_isOperationPending)
+    {
+        var bp = ctx.Customer;
+
+        <div class="customer-context-deck d-flex flex-column gap-2 mb-2 animate-fade">
+            
+            <!-- EMAIL INSIGHT PANEL: Renders AI Text Summaries & Intent Tokens -->
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1">
+                    <span class="text-caption text-dark">💡 Email Insight</span>
+                    <FluentBadge Appearance="Appearance.Neutral">Linked</FluentBadge>
+                </div>
+                <div class="text-small text-dark lh-base">
+                    <div><strong>Mail Contact:</strong> @bp.ContactName</div>
+                    <div class="p-1.5 mt-1 rounded bg-light border-start border-primary border-3 text-muted">
+                        @ctx.AiExecutiveBrief
+                    </div>
+                    <div class="mt-1 d-flex align-items-center gap-1">
+                        <strong>Intent Status:</strong>
+                        <FluentBadge Appearance="Appearance.Neutral">Quote Request</FluentBadge>
+                    </div>
+                </div>
+            </FluentCard>
+
+            <!-- QUICK ACTIONS RIBBON: Cleared of all Size16 and Icons elements -->
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-xs); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex flex-row flex-wrap justify-content-start gap-1" role="toolbar" aria-label="Quick Actions">
+                    <FluentButton Appearance="Appearance.Neutral" Size="ControlSize.Small">
+                        Create Contact
+                    </FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral" Size="ControlSize.Small">
+                        Link to Existing
+                    </FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral" Size="ControlSize.Small">
+                        New Opportunity
+                    </FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral" Size="ControlSize.Small" @onclick='() => NavigateToPage("tasks")'>
+                        Create Task
+                    </FluentButton>
+                </div>
+            </FluentCard>
+            <!-- CRM SNAPSHOT PANEL: Complete Original Customer Financial Block -->
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1">
+                    <span class="text-caption text-dark">💼 Sage X3 Business Partner</span>
+                    <StatusBadge Value="@bp.AccountStatus" />
+                </div>
+                <div class="text-small text-dark lh-base">
+                    <div class="d-flex justify-content-between align-items-start mb-0.5">
+                        <h2 class="text-header m-0 col-9 truncate-text">@bp.CompanyName</h2>
+                        <a href="@BuildSageX3CustomerDeepLink(bp.Id)"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="badge bg-primary text-decoration-none text-white text-caption py-1 px-1.5">
+                            🔗 Open X3
+                        </a>
+                    </div>
+                    <div class="text-muted mb-2">Account Tracking ID: <span class="text-dark fw-bold">@bp.Id</span></div>
+
+                    <div class="row g-1 text-center border-top pt-2">
+                        <div class="col-4 border-end">
+                            <div class="text-caption">Credit Limit</div>
+                            <div class="fw-bold text-dark">@bp.CreditLimit.ToString("C0")</div>
+                        </div>
+                        <div class="col-4 border-end">
+                            <div class="text-caption">Balance Due</div>
+                            <div class="fw-bold text-danger">@bp.BalanceDue.ToString("C0")</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-caption">Available</div>
+                            <div class="fw-bold text-success">@bp.AvailableCredit.ToString("C0")</div>
+                        </div>
+                    </div>
+                </div>
+            </FluentCard>
+
+            <!-- FINANCIAL DOCUMENT LOGS: Complete Original Virtualized Invoice Streams -->
+            <FluentCard MinimalStyle="true" Style="padding: 0; background-color: white; border: 1px solid var(--sage-border-color); overflow: hidden;">
+                <h3 class="bg-light p-2 m-0 text-caption border-bottom" id="doc-heading-label">
+                    📄 Financial Document Logs
+                </h3>
+                <div role="list" aria-labelledby="doc-heading-label">
+                    @if (_isLazyLoadingDocuments)
+                    {
+                        <LoadingPanel Message="Progressively synchronizing secondary financial data tables..." />
+                    }
+                    else if (ctx.RecentDocuments == null || !ctx.RecentDocuments.Any())
+                    {
+                        <EmptyStateView Message="No financial documents or recent ledger records found for this customer account." Icon="📄" />
+                    }
+                    else
+                    {
+                        <Virtualize Items="ctx.RecentDocuments" Context="doc">
+                            <div class="compact-list-row d-flex justify-content-between align-items-center" role="listitem">
+                                <div class="truncate-text col-7">
+                                    <a href="@BuildSageX3DocumentDeepLink(doc.DocumentNumber, doc.Type)"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="fw-semibold text-primary text-small text-decoration-underline">
+                                        @doc.DocumentNumber
+                                    </a>
+                                    <div class="text-muted text-caption">@doc.Type | @doc.Date.ToLocalTime().ToString("d")</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold text-secondary text-small me-2">@doc.Amount.ToString("N2") @doc.Currency</span>
+                                    <StatusBadge Value="@doc.Status" />
+                                </div>
+                            </div>
+                        </Virtualize>
+                    }
+                </div>
+            </FluentCard>
+
+        </div>
+    }
+    else if (!_isOperationPending)
+    {
+        <!-- CONDITION B: UNMAPPED SENDER FALLBACK ALERTS -->
+        <div class="alert alert-warning p-2.5 m-2 rounded shadow-xs d-flex justify-content-between align-items-center animate-fade" role="alert" style="font-size: 0.75rem; border-left: 4px solid var(--fluent-warning); background-color: #fff8f2; border-top: none; border-right: none; border-bottom: none;">
+            <div class="col-8">
+                <strong class="text-dark d-block mb-0.5">⚠️ Unmapped Mail Sender</strong>
+                <span class="text-muted d-block" style="line-height: 1.3;">This email address does not match any active customer or contact records inside Sage X3.</span>
+            </div>
+            <FluentButton Appearance="Appearance.Accent" Size="ControlSize.Small" @onclick="OpenAddContactModalDialog">
+                Add Contact
+            </FluentButton>
+        </div>
+    }
+}
+
+@if (_isAddContactModalOpen)
+{
+    <!-- Native Fluent Dialog Component Cleared of all Size16/Icons dependencies -->
+    <FluentDialog Hidden="@(!_isAddContactModalOpen)" Modal="true" aria-label="Add New Sage X3 Contact Form" Style="--dialog-max-width: 310px; --dialog-height: auto;">
+        <div class="d-flex flex-column p-1">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-1.5 mb-2">
+                <h6 class="m-0 fw-bold text-dark" style="font-size: 0.85rem;">📝 Add Contact to Sage</h6>
+                <FluentButton Appearance="Appearance.Stealth" Size="ControlSize.Small" @onclick="CloseAddContactModalDialog">
+                    Close
+                </FluentButton>
+            </div>
+            <div class="mb-2">
+                <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Contact Full Name</label>
+                <FluentTextField Placeholder="e.g. Sarah Johnson" @bind-Value="_newContactName" Style="width: 100%;" />
+            </div>
+            <div class="mb-2">
+                <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Business Partner Code</label>
+                <FluentTextField Placeholder="e.g. BPC-ACME001" @bind-Value="_newContactBpCode" Style="width: 100%;" />
+            </div>
+            <div class="mb-3">
+                <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Email Address</label>
+                <FluentTextField ReadOnly="true" Value="@StateContainer.SenderEmail" Style="width: 100%;" />
+            </div>
+            <FluentButton Appearance="Appearance.Accent" Style="width: 100%; font-weight: 600;" @onclick="CommitNewContactToSageRegistry">
+                Register Contact Record
+            </FluentButton>
+        </div>
+    </FluentDialog>
+}
+
+<style>
+    .animate-fade {
+        animation: fadeInCtx 0.22s ease-out;
+    }
+
+    @@keyframes fadeInCtx {
+        from {
+            opacity: 0;
+            transform: translateY(-2px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+@code {
+    private bool _isOperationPending = false;
+    private bool _isLazyLoadingDocuments = false;
+    private string _uiActionErrorAlert = string.Empty;
+    private bool _shouldRefreshLayoutState = true;
+    private bool _isDeviceOffline = false;
+    private static Action<MailItemChangedEventArgs>? _onMailItemSelectionChangedAction;
+
+    private bool _isAddContactModalOpen = false;
+    private string _newContactName = string.Empty;
+    private string _newContactBpCode = string.Empty;
+
+    private string _currentProgressiveStatusText = "Authenticating secure identity context...";
+    private const string SageX3ClientBaseUrl = "https://your-firm.com";
+
+    protected override void OnInitialized()
+    {
+        StateContainer.OnStateChanged += HandleWorkspaceDataStateUpdated;
+        _onMailItemSelectionChangedAction = HandleMailItemContextSwitched;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDeviceOffline = !await JSRuntime.InvokeAsync<bool>("eval", "navigator.onLine");
+            _shouldRefreshLayoutState = true;
+            StateHasChanged();
+        }
+    }
+
+    protected override bool ShouldRender()
+    {
+        if (_shouldRefreshLayoutState)
+        {
+            _shouldRefreshLayoutState = false;
+            return true;
+        }
+        return false;
+    }
+
+    private void HandleWorkspaceDataStateUpdated()
+    {
+        _shouldRefreshLayoutState = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable("NotifyMailItemSelectionChanged")]
+    public static void NotifyMailItemSelectionChanged(MailItemChangedEventArgs args)
+    {
+        _onMailItemSelectionChangedAction?.Invoke(args);
+    }
+
+    private void HandleMailItemContextSwitched(MailItemChangedEventArgs args)
+    {
+        StateContainer.SetIdentityContext(args.SenderEmail, args.SenderName, StateContainer.ActiveUserEmail);
+        _shouldRefreshLayoutState = true;
+        InvokeAsync(ForceOnDemandLedgerSync);
+    }
+
+    private async Task ForceOnDemandLedgerSync()
+    {
+        if (_isDeviceOffline) return;
+
+        _isOperationPending = true;
+        _uiActionErrorAlert = string.Empty;
+        _currentProgressiveStatusText = "Authenticating secure identity credentials...";
+        _shouldRefreshLayoutState = true;
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(300);
+            _currentProgressiveStatusText = "Resolving business partner context profiles...";
+            StateHasChanged();
+
+            var result = await ApiService.GetWorkspaceContextAsync(StateContainer.SenderEmail, StateContainer.SenderName, StateContainer.ActiveUserEmail, "SIMULATED_USER_TOKEN");
+
+            if (result != null && result.IsSuccess && result.Value != null)
+            {
+                var response = result.Value;
+
+                var identityOnlyPayload = new WorkspaceContextResponse(response.Customer, new List<SageDocumentDto>(), response.AiExecutiveBrief, response.IsInternalEmployee, response.SuggestedNextActionCard, response.RecommendedActionStyleMarker);
+                StateContainer.SetWorkspaceContextResponse(identityOnlyPayload);
+
+                _isOperationPending = false;
+                _shouldRefreshLayoutState = true;
+                await InvokeAsync(StateHasChanged);
+
+                if (response.Customer != null)
+                {
+                    _isLazyLoadingDocuments = true;
+                    _shouldRefreshLayoutState = true;
+                    StateHasChanged();
+
+                    await Task.Delay(400);
+
+                    var completePayload = new WorkspaceContextResponse(response.Customer, response.RecentDocuments, response.AiExecutiveBrief, response.IsInternalEmployee, response.SuggestedNextActionCard, response.RecommendedActionStyleMarker);
+                    StateContainer.SetWorkspaceContextResponse(completePayload);
+                }
+            }
+            else
+            {
+                _uiActionErrorAlert = "Unable to load customer information. Please verify network access or try again.";
+            }
+        }
+        catch
+        {
+            _uiActionErrorAlert = "Sage X3 is currently unavailable. Stored workspace operations will remain active.";
+        }
+        finally
+        {
+            _isOperationPending = false;
+            _isLazyLoadingDocuments = false;
+            _shouldRefreshLayoutState = true;
+            StateHasChanged();
+        }
+    }
+
+    private string BuildSageX3CustomerDeepLink(string customerId) =>
+        $"{SageX3ClientBaseUrl}#function=GESBPC&mode=2&key={Uri.EscapeDataString(customerId)}";
+
+    private string BuildSageX3DocumentDeepLink(string docNo, string type)
+    {
+        string functionCode = type.Contains("Invoice", StringComparison.OrdinalIgnoreCase) ? "GESSIH" : "GESSOH";
+        return $"{SageX3ClientBaseUrl}#function={functionCode}&mode=2&key={Uri.EscapeDataString(docNo)}";
+    }
+
+    private void NavigateToPage(string targetPageUrl)
+    {
+        var currentQuery = Nav.ToAbsoluteUri(Nav.Uri).Query;
+        Nav.NavigateTo($"/{targetPageUrl}{currentQuery}");
+    }
+
+    private void OpenAddContactModalDialog()
+    {
+        _newContactName = StateContainer.SenderName;
+        _isAddContactModalOpen = true;
+    }
+
+    private void CloseAddContactModalDialog()
+    {
+        _isAddContactModalOpen = false;
+    }
+
+    private void CommitNewContactToSageRegistry()
+    {
+        _isAddContactModalOpen = false;
+    }
+
+    public void Dispose()
+    {
+        StateContainer.OnStateChanged -= HandleWorkspaceDataStateUpdated;
+    }
+
+    public class MailItemChangedEventArgs
+    {
+        public string SenderEmail { get; set; } = string.Empty;
+        public string SenderName { get; set; } = string.Empty;
+        public string MessageId { get; set; } = string.Empty;
+    }
+}

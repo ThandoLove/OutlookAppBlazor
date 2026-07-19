@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+@using OperationalWorkspaceUI.UIState
+@using OperationalWorkspaceUI.Components.Shared
+@inject UIStateContainer StateContainer
+@inject NavigationManager Nav
+@implements IDisposable
+
+<div class="outlook-addin-frame d-flex flex-row min-vh-100 w-100">
+    
+    <!-- AXIS 1: Permanent Left Vertical Sidebar Navigation Rail -->
+    <NavigationSidebar />
+
+    <!-- AXIS 2: Right Core Functional Presentation Stream -->
+    <div class="d-flex flex-column flex-grow-1 min-w-0">
+        
+        <!-- Persistent User Profile Header Platform Banner -->
+        <WorkspaceTopbar />
+
+        <!-- Conditional External Email Sender Context Hub Component -->
+        <CustomerContextHost />
+
+        <!-- Dynamic Main Content Viewport. Main browser window body scrollbar handles all overflows naturally -->
+        <main class="main-content-scrollpane flex-grow-1 p-2" role="main">
+            @Body
+        </main>
+
+    </div>
+
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Subscribe to global UI state mutations to automatically force layout re-renders reactively
+        StateContainer.OnStateChanged += HandleGlobalLayoutStateChanged;
+    }
+
+    private void HandleGlobalLayoutStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        // Safe Lifecycle boundary unsubscription completely prevents background connection leaks
+        StateContainer.OnStateChanged -= HandleGlobalLayoutStateChanged;
+    }
+}

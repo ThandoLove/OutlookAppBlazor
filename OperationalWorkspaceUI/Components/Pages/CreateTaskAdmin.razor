@@ -1,0 +1,98 @@
+@page "/admin-tasks"
+@using OperationalWorkspaceUI.UIState
+@inject UIStateContainer StateContainer
+@inject NavigationManager Nav
+
+<div class="admin-tasks-panel p-0">
+    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+        <h6 class="m-0 fw-bold text-muted text-caption" style="font-size: 0.68rem; font-weight: 700;">⚙️ ADMINISTRATIVE TASK DISPATCH</h6>
+    </div>
+
+    @if (StateContainer.UserRoleScope.Contains("Admin"))
+    {
+        <div class="hover-pane">
+            <FluentCard MinimalStyle="true" Style="padding: 12px; background-color: white; border: 1px solid var(--sage-border-color);">
+
+                <div class="mb-2">
+                    <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Task Allocation Title</label>
+                    <FluentTextField Placeholder="Assign work order description..." @bind-Value="_taskTitle" Style="width: 100%;" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Assign To Operational Employee</label>
+                    <!-- FIX: Data-bound directly to an array collection, removing unclosed child tag parsing blocks entirely -->
+                    <FluentSelect Items="@_employeeOptions" TOption="string" @bind-Value="_assignedEmployee" Style="width: 100%;" />
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Target Due Date</label>
+                        <FluentDatePicker @bind-Value="_dueDate" Style="width: 100%;" />
+                    </div>
+                    <div class="col-6">
+                        <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Priority Classification</label>
+                        <!-- FIX: Data-bound directly to an array collection, removing unclosed child tag parsing blocks entirely -->
+                        <FluentSelect Items="@_priorityOptions" TOption="string" @bind-Value="_priorityLevel" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Extracted Email Context</label>
+                    <FluentTextArea ReadOnly="true" Rows="3" Style="width: 100%; background-color: var(--sage-light-bg);"
+                                    Value="@($"Sender Address: {StateContainer.SenderEmail}\nSubject Metadata: Requesting a new quote for 50 units of product ABC.")" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(_successLogMessage))
+                {
+                    <div class="mb-2">
+                        <FluentMessageBar Intent="@MessageIntent.Success" AllowDismiss="true">@_successLogMessage</FluentMessageBar>
+                    </div>
+                }
+
+                <div class="mt-2">
+                    <FluentButton Appearance="Appearance.Accent" Style="width: 100%; font-weight: 600; font-size: 0.75rem;" @onclick="DispatchTaskToEmployeeWorklist">
+                        Dispatch Task Assignment
+                    </FluentButton>
+                </div>
+
+            </FluentCard>
+        </div>
+    }
+    else
+    {
+        <FluentMessageBar Intent="@MessageIntent.Error" AllowDismiss="false" Style="border-radius: 6px;">
+            Access Denied: Your assigned corporate credentials do not hold the required Administrative structural permissions to dispatch tasks.
+        </FluentMessageBar>
+    }
+</div>
+@code {
+    private string _taskTitle = string.Empty;
+    private string _assignedEmployee = string.Empty;
+    private DateTime? _dueDate = DateTime.UtcNow.AddDays(1);
+    private string _priorityLevel = "Medium";
+    private string _successLogMessage = string.Empty;
+
+    // FluentSelect Option collection array lists ensuring type-safe text inference
+    private readonly List<string> _employeeOptions = new()
+    {
+        "",
+        "Jane Smith (Accounts Consultant)",
+        "Alex Wong (Technical Lead)",
+        "Robert Vance (Logistics Coordinator)"
+    };
+
+    private readonly List<string> _priorityOptions = new()
+    {
+        "Low",
+        "Medium",
+        "High"
+    };
+
+    private void DispatchTaskToEmployeeWorklist()
+    {
+        if (string.IsNullOrWhiteSpace(_taskTitle) || string.IsNullOrWhiteSpace(_assignedEmployee)) return;
+
+        _successLogMessage = "Success! Task has been dispatched and appended to the employee's live work list.";
+        _taskTitle = string.Empty;
+    }
+}

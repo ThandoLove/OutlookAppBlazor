@@ -1,0 +1,69 @@
+﻿@page "/dashboard"
+@using OperationalWorkspaceUI.UIState
+@inject UIStateContainer StateContainer
+@inject NavigationManager Nav
+
+<div class="dashboard-viewport container p-0 dashboard-cockpit-pane">
+
+    <!-- Headline Title Context Marker Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+        <h6 class="m-0 fw-bold text-muted text-caption" style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.3px;">🏠 WORKSPACE OVERVIEW COCKPIT</h6>
+    </div>
+
+    <!-- THE PURE COCKPIT SNAPSHOT GRID LAYOUT PANEL SYSTEM -->
+    <div class="d-flex flex-column gap-2" role="region" aria-label="Feature Module Summary Shortcuts">
+
+        <!-- KNOWLEDGE BASE COCKPIT SUMMARY CARD -->
+        <div class="hover-pane" @onclick='() => NavigateToPage("knowledge")'>
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">🧠 Knowledge Base Documentation</span>
+                    <FluentBadge Appearance="Appearance.Neutral">4 Articles</FluentBadge>
+                </div>
+                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Product Manuals | Warehouse Allocation Guide | ERP FAQ indexes clear.</div>
+            </FluentCard>
+        </div>
+
+        <!-- MY ASSIGNED WORKLOAD COCKPIT SUMMARY CARD -->
+        <div class="hover-pane" @onclick='() => NavigateToPage("my-tasks")'>
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">📋 My Assigned Tasks Worklist</span>
+                    <FluentBadge Appearance="Appearance.Filled" style="background-color: var(--sage-alert-danger); color: white;">1 Overdue</FluentBadge>
+                </div>
+                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Pending Action Tasks (5) | Urgent: "Follow up with Tech Innovations Inc. regarding Quote"</div>
+            </FluentCard>
+        </div>
+
+        <!-- RECENT ACTIVITY TIMELINE COCKPIT SUMMARY CARD -->
+        <div class="hover-pane" @onclick='() => NavigateToPage("activities")'>
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">⚡ Activity Timeline</span>
+                    <FluentBadge Appearance="Appearance.Filled" style="background-color: var(--sage-alert-success); color: white;">Synced</FluentBadge>
+                </div>
+                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Today: Sales Order Draft QTE-5520 compiled and recorded inside secure system.</div>
+            </FluentCard>
+        </div>
+
+        <!-- CONTEXT READ-ONLY DOCUMENTS SUMMARY HOOK -->
+        <div class="hover-pane" @onclick='() => NavigateToPage("documents")'>
+            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">📄 Immutable Document Reference Ledger</span>
+                    <FluentBadge Appearance="Appearance.Neutral">Read Only</FluentBadge>
+                </div>
+                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Surfaces read-only Quotations, Invoices, and master records straight from Sage X3.</div>
+            </FluentCard>
+        </div>
+
+    </div>
+</div>
+@code {
+    private void NavigateToPage(string targetPageUrl)
+    {
+        var currentQuery = Nav.ToAbsoluteUri(Nav.Uri).Query;
+        Nav.NavigateTo($"/{targetPageUrl}{currentQuery}");
+    }
+}
+

@@ -1,0 +1,68 @@
+@inject NavigationManager Nav
+
+<aside class="sidebar-rail-width d-flex flex-column align-items-center py-2 border-end"
+       role="navigation"
+       aria-label="Outlook Sidebar Navigation">
+
+    <div class="d-flex flex-column gap-3 w-100 align-items-center">
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("dashboard")'>
+            <span class="fw-bold">Dashboard</span>
+            <span class="nav-sidebar-label mt-1">Dash</span>
+        </button>
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("contacts")'>
+            <span class="fw-bold">Contacts</span>
+            <span class="nav-sidebar-label mt-1">Contacts</span>
+        </button>
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("tickets")'>
+            <span class="fw-bold">Tickets</span>
+            <span class="nav-sidebar-label mt-1">Tickets</span>
+        </button>
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("documents")'>
+            <span class="fw-bold">Documents</span>
+            <span class="nav-sidebar-label mt-1">Attach</span>
+        </button>
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("knowledge")'>
+            <span class="fw-bold">Knowledge</span>
+            <span class="nav-sidebar-label mt-1">Knowledge</span>
+        </button>
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("admin-tasks")'>
+            <span class="fw-bold">Admin</span>
+            <span class="nav-sidebar-label mt-1">Admin</span>
+        </button>
+
+        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
+                type="button"
+                @onclick='() => NavigateTo("my-tasks")'>
+            <span class="fw-bold">Tasks</span>
+            <span class="nav-sidebar-label mt-1">My Tasks</span>
+        </button>
+
+    </div>
+
+</aside>
+
+@code {
+    private void NavigateTo(string destination)
+    {
+        var currentQuery = Nav.ToAbsoluteUri(Nav.Uri).Query;
+        Nav.NavigateTo($"/{destination}{currentQuery}");
+    }
+}

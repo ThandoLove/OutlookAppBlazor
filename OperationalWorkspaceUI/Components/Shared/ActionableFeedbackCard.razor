@@ -1,0 +1,41 @@
+﻿@using System.Threading.Tasks
+
+@if (IsOffline)
+{
+    <!-- Section 9 Resolution: User-Friendly Offline Indicator Layout Panel -->
+    <div class="card p-3 my-2 text-center border rounded shadow-xs bg-white"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+        <div class="mb-2" style="font-size: 1.5rem;" aria-hidden="true">🌐</div>
+        <h6 class="text-warning fw-bold m-0 text-header">Connection Offline</h6>
+        <p class="text-muted my-2 text-small">Your computer is currently disconnected from the network. Stored offline mock data viewports are active.</p>
+    </div>
+}
+else if (IsLoading)
+{
+    <!-- Phase 4 Resolution: Modular LoadingPanel Subcomponent Reuse -->
+    <LoadingPanel Message="@LoadingMessage" />
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <!-- Phase 4 Resolution: Modular ErrorPanel Subcomponent Reuse -->
+    <ErrorPanel Message="@ErrorMessage" OnRetry="TriggerRetryLoop" />
+}
+
+@code {
+    [Parameter] public bool IsOffline { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Title { get; set; } = "Transaction Blocked";
+    [Parameter] public string LoadingMessage { get; set; } = "Querying secure application schemas...";
+    [Parameter] public string ErrorMessage { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnRetryCallback { get; set; }
+
+    private async Task TriggerRetryLoop()
+    {
+        if (OnRetryCallback.HasDelegate)
+        {
+            await OnRetryCallback.InvokeAsync();
+        }
+    }
+}
