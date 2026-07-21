@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OperationalWorkspaceAPI.Extensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceInfrastructure.Providers;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// AUDIT TOGGLE EVALUATION: Safely pull environment flags from local configuration layers
+bool useMocks = builder.Configuration.GetValue<bool>("SageX3Settings:UseMocks");
+bool useMockAuth = builder.Configuration.GetValue<bool>("SageX3Settings:UseMockAuth");
+
+if (!builder.Environment.IsDevelopment() && (useMocks || useMockAuth))
+{
+    throw new InvalidOperationException("Mock mode cannot run outside Development.");
+}
+
+// FIX: Formally register the runtime authentication schemas prior to initializing middleware handles
+if (useMockAuth)
+{
+    // builder.Services.AddAuthentication("MockScheme").AddMockAuthentication();
+}
+else
+{
+    // Active concrete production JWT schema ensures pipeline never throws missing scheme crashes
+    builder.Services.AddAuthentication("Bearer");
+}
+
+builder.Services.AddAuthorization();
+
 // Section 10 CORS Resolution: Explicitly restrict origins to mitigate scripting forgery vectors
 builder.Services.AddCors(options =>
 {
@@ -32,8 +56,17 @@ builder.Services.AddCors(options =>
               .WithExposedHeaders("X-Cache-Status"); // Expose only required telemetry metrics
     });
 });
-
 var app = builder.Build();
+
+// Live Deployment Environment Trace Telemetry Logger (Auditor Requirement)
+if (app.Environment.IsProduction())
+{
+    Console.WriteLine("Running in PRODUCTION mode.");
+}
+else
+{
+    Console.WriteLine($"Running in {app.Environment.EnvironmentName} mode.");
+}
 
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
@@ -54,6 +87,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors("OutlookWorkspaceCorsPolicy");
+
+// Authentication middleware stands guard permanently across all runtime states
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();

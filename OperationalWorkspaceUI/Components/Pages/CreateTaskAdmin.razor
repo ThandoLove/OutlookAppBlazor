@@ -5,64 +5,66 @@
 
 <div class="admin-tasks-panel p-0">
     <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-        <h6 class="m-0 fw-bold text-muted text-caption" style="font-size: 0.68rem; font-weight: 700;">⚙️ ADMINISTRATIVE TASK DISPATCH</h6>
+        <h6 class="m-0 fw-bold text-caption">⚙️ ADMINISTRATIVE TASK DISPATCH</h6>
     </div>
 
-    @if (StateContainer.UserRoleScope.Contains("Admin"))
+    @if (StateContainer.UserRoleScope != null && StateContainer.UserRoleScope.Contains("Admin"))
     {
         <div class="hover-pane">
-            <FluentCard MinimalStyle="true" Style="padding: 12px; background-color: white; border: 1px solid var(--sage-border-color);">
+            <FluentCard MinimalStyle="true" class="dashboard-fluent-card">
+                <div class="card-inner-frame">
 
-                <div class="mb-2">
-                    <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Task Allocation Title</label>
-                    <FluentTextField Placeholder="Assign work order description..." @bind-Value="_taskTitle" Style="width: 100%;" />
-                </div>
-
-                <div class="mb-2">
-                    <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Assign To Operational Employee</label>
-                    <!-- FIX: Data-bound directly to an array collection, removing unclosed child tag parsing blocks entirely -->
-                    <FluentSelect Items="@_employeeOptions" TOption="string" @bind-Value="_assignedEmployee" Style="width: 100%;" />
-                </div>
-
-                <div class="row g-2 mb-2">
-                    <div class="col-6">
-                        <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Target Due Date</label>
-                        <FluentDatePicker @bind-Value="_dueDate" Style="width: 100%;" />
-                    </div>
-                    <div class="col-6">
-                        <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Priority Classification</label>
-                        <!-- FIX: Data-bound directly to an array collection, removing unclosed child tag parsing blocks entirely -->
-                        <FluentSelect Items="@_priorityOptions" TOption="string" @bind-Value="_priorityLevel" Style="width: 100%;" />
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="fw-semibold text-muted d-block mb-0.5" style="font-size: 0.72rem;">Extracted Email Context</label>
-                    <FluentTextArea ReadOnly="true" Rows="3" Style="width: 100%; background-color: var(--sage-light-bg);"
-                                    Value="@($"Sender Address: {StateContainer.SenderEmail}\nSubject Metadata: Requesting a new quote for 50 units of product ABC.")" />
-                </div>
-
-                @if (!string.IsNullOrEmpty(_successLogMessage))
-                {
                     <div class="mb-2">
-                        <FluentMessageBar Intent="@MessageIntent.Success" AllowDismiss="true">@_successLogMessage</FluentMessageBar>
+                        <label class="fw-semibold text-muted d-block mb-0.5 text-small">Task Allocation Title</label>
+                        <FluentTextField Placeholder="Assign work order description..." @bind-Value="_taskTitle" class="w-100" />
                     </div>
-                }
 
-                <div class="mt-2">
-                    <FluentButton Appearance="Appearance.Accent" Style="width: 100%; font-weight: 600; font-size: 0.75rem;" @onclick="DispatchTaskToEmployeeWorklist">
-                        Dispatch Task Assignment
-                    </FluentButton>
+                    <div class="mb-2">
+                        <label class="fw-semibold text-muted d-block mb-0.5 text-small">Assign To Operational Employee</label>
+                        <FluentSelect Items="@_employeeOptions" TOption="string" @bind-Value="_assignedEmployee" class="w-100" />
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="fw-semibold text-muted d-block mb-0.5 text-small">Target Due Date</label>
+                            <FluentDatePicker @bind-Value="_dueDate" class="w-100" />
+                        </div>
+                        <div class="col-6">
+                            <label class="fw-semibold text-muted d-block mb-0.5 text-small">Priority Classification</label>
+                            <FluentSelect Items="@_priorityOptions" TOption="string" @bind-Value="_priorityLevel" class="w-100" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted d-block mb-0.5 text-small">Extracted Email Context</label>
+                        <FluentTextArea ReadOnly="true" Rows="3" class="w-100 read-only-ledger-preview"
+                                        Value="@($"Sender Address: {StateContainer.SenderEmail}\nSubject Metadata: Requesting a new quote for 50 units of product ABC.")" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_successLogMessage))
+                    {
+                        <div class="mb-2">
+                            <FluentMessageBar Intent="@MessageIntent.Success" AllowDismiss="true">@_successLogMessage</FluentMessageBar>
+                        </div>
+                    }
+
+                    <div class="mt-2">
+                        <FluentButton Appearance="Appearance.Accent" class="w-100 font-weight-bold text-small" @onclick="DispatchTaskToEmployeeWorklist">
+                            Dispatch Task Assignment
+                        </FluentButton>
+                    </div>
+
                 </div>
-
             </FluentCard>
         </div>
     }
     else
     {
-        <FluentMessageBar Intent="@MessageIntent.Error" AllowDismiss="false" Style="border-radius: 6px;">
-            Access Denied: Your assigned corporate credentials do not hold the required Administrative structural permissions to dispatch tasks.
-        </FluentMessageBar>
+        <div class="mb-2">
+            <FluentMessageBar Intent="@MessageIntent.Error" AllowDismiss="false">
+                Access Denied: Your assigned corporate credentials do not hold the required Administrative structural permissions to dispatch tasks.
+            </FluentMessageBar>
+        </div>
     }
 </div>
 @code {

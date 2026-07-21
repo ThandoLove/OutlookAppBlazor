@@ -1,48 +1,75 @@
 ﻿@inherits LayoutComponentBase
 @using OperationalWorkspaceUI.UIState
 @using OperationalWorkspaceUI.Components.Shared
+@using Microsoft.Extensions.Configuration
 @inject UIStateContainer StateContainer
-@inject NavigationManager Nav
+@inject IConfiguration Config
 @implements IDisposable
 
-<div class="outlook-addin-frame d-flex flex-row min-vh-100 w-100">
+@{
+    // AUDIT CHECK: Safely extract environment mock toggle flags straight from the appsettings tree
+    bool useMocks = Config.GetValue<bool>("SageX3Settings:UseMocks");
+    bool useMockAuth = Config.GetValue<bool>("SageX3Settings:UseMockAuth");
     
-    <!-- AXIS 1: Permanent Left Vertical Sidebar Navigation Rail -->
-    <NavigationSidebar />
+    // The workspace shell unlocks if the user completes SSO login OR if local developer mock mode is active
+    bool allowWorkspaceAccess = StateContainer.IsAuthenticated || useMocks || useMockAuth;
+}
 
-    <!-- AXIS 2: Right Core Functional Presentation Stream -->
-    <div class="d-flex flex-column flex-grow-1 min-w-0">
+@if (!allowWorkspaceAccess)
+{
+    <!-- SEQUENCE 1: CLEAN STANDALONE LOGIN GATEWAY LAYER (No sidebars or banners allowed) -->
+    <div class="login-canvas-container">
+        @Body
+    </div>
+}
+else
+{
+    <!-- SEQUENCE 2: PRODUCTION BLUEPRINT MULTI-PANEL SPLIT COCKPIT WINDOW VIEW -->
+    <div class="workspace-container-frame">
         
-        <!-- Persistent User Profile Header Platform Banner -->
+        
         <WorkspaceTopbar />
 
-        <!-- Conditional External Email Sender Context Hub Component -->
-        <CustomerContextHost />
+        <!-- CORE CONTENT MATRIX GRID PLATFORM -->
+        <div class="workspace-inner-platform">
+            
+            <!-- Left Axis Column Navigation Sidebar (Constant layout shell rail) -->
+            <NavigationSidebar />
 
-        <!-- Dynamic Main Content Viewport. Main browser window body scrollbar handles all overflows naturally -->
-        <main class="main-content-scrollpane flex-grow-1 p-2" role="main">
-            @Body
-        </main>
+            <!-- Right Core Functional Presentation Workspace Area -->
+            <div class="d-flex flex-column flex-grow-1 min-w-0">
+                
+                <!-- Conditional External Email Sender Context Hub Component -->
+                <CustomerContextHost />
+
+                <!-- Dynamic Sub-Page Viewport Canvas Cell (Only this area swaps page documents dynamically) -->
+                <main class="workspace-scroll-viewport" role="main">
+                    @Body
+                </main>
+                
+            </div>
+
+        </div>
 
     </div>
-
-</div>
+}
 
 @code {
     protected override void OnInitialized()
     {
-        // Subscribe to global UI state mutations to automatically force layout re-renders reactively
-        StateContainer.OnStateChanged += HandleGlobalLayoutStateChanged;
+        // Subscribe to global UI state container mutations to force responsive layout refreshes
+        StateContainer.OnStateChanged += SynchronizeCoreLayoutStateView;
     }
 
-    private void HandleGlobalLayoutStateChanged()
+    private void SynchronizeCoreLayoutStateView()
     {
+        // Safe cross-thread invocation forcing UI thread synchronization
         InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        // Safe Lifecycle boundary unsubscription completely prevents background connection leaks
-        StateContainer.OnStateChanged -= HandleGlobalLayoutStateChanged;
+        // Safe lifecycle unsubscription completely prevents background memory leak connections
+        StateContainer.OnStateChanged -= SynchronizeCoreLayoutStateView;
     }
 }

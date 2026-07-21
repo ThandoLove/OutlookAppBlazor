@@ -1,63 +1,67 @@
 @inject NavigationManager Nav
 
-<aside class="sidebar-rail-width d-flex flex-column align-items-center py-2 border-end"
-       role="navigation"
-       aria-label="Outlook Sidebar Navigation">
-
+<aside class="sidebar-rail-pane" role="navigation" aria-label="Outlook Sidebar Navigation">
     <div class="d-flex flex-column gap-3 w-100 align-items-center">
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("dashboard")'>
-            <span class="fw-bold">Dashboard</span>
-            <span class="nav-sidebar-label mt-1">Dash</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("dashboard")' title="Dashboard Cockpit">
+            <div class="fs-5 mb-0.5">🏠</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Dash</span>
         </button>
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("contacts")'>
-            <span class="fw-bold">Contacts</span>
-            <span class="nav-sidebar-label mt-1">Contacts</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("contacts")' title="Contacts Directory">
+            <div class="fs-5 mb-0.5">👤</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Contacts</span>
         </button>
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("tickets")'>
-            <span class="fw-bold">Tickets</span>
-            <span class="nav-sidebar-label mt-1">Tickets</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("tickets")' title="Support Cases">
+            <div class="fs-5 mb-0.5">📋</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Cases</span>
         </button>
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("documents")'>
-            <span class="fw-bold">Documents</span>
-            <span class="nav-sidebar-label mt-1">Attach</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("documents")' title="Attach Documents Ledger">
+            <div class="fs-5 mb-0.5">📎</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Attach</span>
         </button>
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("knowledge")'>
-            <span class="fw-bold">Knowledge</span>
-            <span class="nav-sidebar-label mt-1">Knowledge</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("knowledge")' title="Knowledge Base Documentation">
+            <div class="fs-5 mb-0.5">📚</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Docs</span>
         </button>
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("admin-tasks")'>
-            <span class="fw-bold">Admin</span>
-            <span class="nav-sidebar-label mt-1">Admin</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("quotes")' title="Quotes Reference">
+            <div class="fs-5 mb-0.5">📑</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Quotes</span>
         </button>
 
-        <button class="w-100 p-1 nav-sidebar-btn d-flex flex-column align-items-center"
-                type="button"
-                @onclick='() => NavigateTo("my-tasks")'>
-            <span class="fw-bold">Tasks</span>
-            <span class="nav-sidebar-label mt-1">My Tasks</span>
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("admin-tasks")' title="Create Task (Admin)">
+            <div class="fs-5 mb-0.5">⚙️</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Admin</span>
+        </button>
+
+        <button class="w-100 p-1 border-0 bg-transparent text-center cursor-pointer sidebar-nav-action-btn" type="button" @onclick='() => NavigateTo("my-tasks")' title="My Assigned Tasks">
+            <div class="fs-5 mb-0.5">✅</div>
+            <span class="nav-sidebar-label text-uppercase d-block">Tasks</span>
         </button>
 
     </div>
-
 </aside>
+
+<style>
+    .sidebar-nav-action-btn {
+        color: #a19f9d;
+        transition: color 0.1s;
+    }
+
+        .sidebar-nav-action-btn:hover {
+            color: #ffffff;
+        }
+
+    .nav-sidebar-label {
+        font-size: 0.55rem;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+</style>
 
 @code {
     private void NavigateTo(string destination)

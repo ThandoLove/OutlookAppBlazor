@@ -40,9 +40,71 @@ html, body {
     margin: 0;
     padding: 0;
     user-select: none;
-    overflow-x: hidden;
+    overflow: hidden;
     line-height: 1.4;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ==========================================================================
+   Structural Layout Containers (Bypasses Inline Styles Natively)
+   ========================================================================== */
+/* Phase 1: Isolated Full-Screen Gatekeeper Shell */
+.login-canvas-container {
+    width: 100vw;
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--sage-light-bg);
+    box-sizing: border-box;
+    margin: 0;
+    padding: var(--spacing-lg);
+}
+
+/* Phase 2: Post-Authentication Split Cockpit Frame Matrix */
+.workspace-container-frame {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-color: var(--sage-light-bg);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.workspace-top-banner {
+    height: var(--top-bar-height);
+    min-height: var(--top-bar-height);
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--sage-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-md);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.workspace-inner-platform {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    height: calc(100vh - var(--top-bar-height));
+    width: 100%;
+    min-height: 0;
+}
+
+.workspace-scroll-viewport {
+    flex-grow: 1;
+    padding: var(--spacing-md);
+    background-color: var(--sage-light-bg);
+    overflow-y: auto;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
 }
 
 /* Base Layout Framework Structures */
@@ -61,6 +123,14 @@ html, body {
     width: var(--sidebar-rail-width);
     min-width: var(--sidebar-rail-width);
     background-color: #201f1e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) 0;
+    border-right: 1px solid var(--sage-border-color);
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .nav-sidebar-btn {

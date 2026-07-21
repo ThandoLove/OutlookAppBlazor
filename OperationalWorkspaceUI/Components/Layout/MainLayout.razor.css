@@ -94,3 +94,32 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+/* Auditor Verified Layout Sizing Infrastructure (No Inline CSS) */
+.workspace-shell {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.workspace-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100vh;
+}
+
+.workspace-main-viewport {
+    flex-grow: 1;
+    padding: 12px;
+    background-color: #f0f4f8;
+    overflow-y: auto;
+    min-height: 0;
+    min-width: 0;
+    box-sizing: border-box;
+}

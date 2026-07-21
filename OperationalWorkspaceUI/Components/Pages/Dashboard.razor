@@ -3,62 +3,118 @@
 @inject UIStateContainer StateContainer
 @inject NavigationManager Nav
 
-<div class="dashboard-viewport container p-0 dashboard-cockpit-pane">
+<div style="display: flex; flex-direction: column; gap: 16px; width: 100%; font-family: 'Segoe UI', -apple-system, sans-serif; padding: 12px; background-color: #f3f2f1;">
 
-    <!-- Headline Title Context Marker Bar -->
-    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-        <h6 class="m-0 fw-bold text-muted text-caption" style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.3px;">🏠 WORKSPACE OVERVIEW COCKPIT</h6>
+    <!-- Headline Title Section Marker Ribbon -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 8px;">
+        <h6 style="margin: 0; font-size: 0.68rem; color: #605e5c; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">🏠 WORKSPACE OVERVIEW COCKPIT</h6>
     </div>
 
-    <!-- THE PURE COCKPIT SNAPSHOT GRID LAYOUT PANEL SYSTEM -->
-    <div class="d-flex flex-column gap-2" role="region" aria-label="Feature Module Summary Shortcuts">
+    <!-- PURE MULTI-MODULE SUMMARY SNAPSHOT GRID LAYOUT PANEL SYSTEM -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; width: 100%;">
 
-        <!-- KNOWLEDGE BASE COCKPIT SUMMARY CARD -->
-        <div class="hover-pane" @onclick='() => NavigateToPage("knowledge")'>
-            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">🧠 Knowledge Base Documentation</span>
+        <!-- 1. KNOWLEDGE BASE SEARCH SHORTCUT MODULE CARD -->
+        <div class="dashboard-interactive-tile" style="cursor: pointer; background-color: #ffffff; border: 1px solid #edebe9; border-radius: 4px; transition: background-color 0.1s;" @onclick='() => NavigateToPage("knowledge")'>
+            <div style="padding: 16px; display: flex; flex-direction: column; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 8px; margin-bottom: 12px;">
+                    <span style="font-weight: 700; color: #201f1e; font-size: 0.78rem;">🧠 Knowledge Base Reference Hub</span>
                     <FluentBadge Appearance="Appearance.Neutral">4 Articles</FluentBadge>
                 </div>
-                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Product Manuals | Warehouse Allocation Guide | ERP FAQ indexes clear.</div>
-            </FluentCard>
-        </div>
-
-        <!-- MY ASSIGNED WORKLOAD COCKPIT SUMMARY CARD -->
-        <div class="hover-pane" @onclick='() => NavigateToPage("my-tasks")'>
-            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">📋 My Assigned Tasks Worklist</span>
-                    <FluentBadge Appearance="Appearance.Filled" style="background-color: var(--sage-alert-danger); color: white;">1 Overdue</FluentBadge>
+                <div style="display: flex; flex-direction: column; gap: 4px; color: #605e5c; font-size: 0.72rem; margin-bottom: 12px; flex-grow: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #edebe9;">
+                        <span>Pricing Guidelines</span>
+                        <span style="color: #0078d4; font-weight: bold;">→</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #edebe9;">
+                        <span>Product Documentation</span>
+                        <span style="color: #0078d4; font-weight: bold;">→</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #edebe9;">
+                        <span>Case Studies</span>
+                        <span style="color: #0078d4; font-weight: bold;">→</span>
+                    </div>
                 </div>
-                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Pending Action Tasks (5) | Urgent: "Follow up with Tech Innovations Inc. regarding Quote"</div>
-            </FluentCard>
-        </div>
-
-        <!-- RECENT ACTIVITY TIMELINE COCKPIT SUMMARY CARD -->
-        <div class="hover-pane" @onclick='() => NavigateToPage("activities")'>
-            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">⚡ Activity Timeline</span>
-                    <FluentBadge Appearance="Appearance.Filled" style="background-color: var(--sage-alert-success); color: white;">Synced</FluentBadge>
+                <div style="color: #605e5c; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Quick reference lookups pulled from Sage system configurations.
                 </div>
-                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Today: Sales Order Draft QTE-5520 compiled and recorded inside secure system.</div>
-            </FluentCard>
+            </div>
         </div>
 
-        <!-- CONTEXT READ-ONLY DOCUMENTS SUMMARY HOOK -->
-        <div class="hover-pane" @onclick='() => NavigateToPage("documents")'>
-            <FluentCard MinimalStyle="true" Style="padding: var(--spacing-sm); background-color: white; border: 1px solid var(--sage-border-color);">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="fw-bold text-dark text-small" style="font-weight: 700; font-size: 0.78rem;">📄 Immutable Document Reference Ledger</span>
+        <!-- 2. MY TASKS EMPLOYEE WORKLOAD OVERVIEW SHORTCUT MODULE CARD -->
+        <div class="dashboard-interactive-tile" style="cursor: pointer; background-color: #ffffff; border: 1px solid #edebe9; border-radius: 4px; transition: background-color 0.1s;" @onclick='() => NavigateToPage("my-tasks")'>
+            <div style="padding: 16px; display: flex; flex-direction: column; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 8px; margin-bottom: 12px;">
+                    <span style="font-weight: 700; color: #201f1e; font-size: 0.78rem;">📋 My Assigned Workload Tracker</span>
+                    <FluentBadge Appearance="Appearance.Neutral" Style="background-color: #d13438; color: #ffffff;">1 Overdue</FluentBadge>
+                </div>
+                <div style="color: #323130; font-size: 0.72rem; line-height: 1.4; margin-bottom: 12px; flex-grow: 1;">
+                    <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Follow up with Sarah - Quote sent</div>
+                    <small style="color: #605e5c; display: block; font-size: 0.65rem; margin-bottom: 6px;">Due: Tomorrow</small>
+
+                    <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Prepare Sales Order - QTE-7789</div>
+                    <small style="color: #605e5c; display: block; font-size: 0.65rem;">Due: Apr 26</small>
+                </div>
+                <div style="color: #605e5c; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Pending (5) Active items requiring context processing flags.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. RECENT ACTIVITY TIMELINE SHORTCUT MODULE CARD -->
+        <div class="dashboard-interactive-tile" style="cursor: pointer; background-color: #ffffff; border: 1px solid #edebe9; border-radius: 4px; transition: background-color 0.1s;" @onclick='() => NavigateToPage("activities")'>
+            <div style="padding: 16px; display: flex; flex-direction: column; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 8px; margin-bottom: 12px;">
+                    <span style="font-weight: 700; color: #201f1e; font-size: 0.78rem;">⚡ Activity Timeline</span>
+                    <FluentBadge Appearance="Appearance.Neutral">Synced</FluentBadge>
+                </div>
+                <div style="color: #323130; font-size: 0.72rem; line-height: 1.4; margin-bottom: 12px; flex-grow: 1;">
+                    <div style="display: flex; gap: 8px; align-items: start; padding: 4px 0;">
+                        <span style="color: #107c10; font-weight: bold;">●</span>
+                        <div>
+                            <div style="font-weight: 600;">Sales Order Draft Created</div>
+                            <small style="color: #605e5c; display: block; font-size: 0.65rem;">Today</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: start; padding: 4px 0; border-top: 1px dashed #edebe9;">
+                        <span style="color: #0078d4; font-weight: bold;">●</span>
+                        <div>
+                            <div style="font-weight: 600;">Call Logged with Sarah Johnson</div>
+                            <small style="color: #605e5c; display: block; font-size: 0.65rem;">Yesterday</small>
+                        </div>
+                    </div>
+                </div>
+                <div style="color: #605e5c; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Live dynamic event telemetry records matrix logs clear.
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. READ-ONLY LEDGER IMMUTABLE DOCUMENTS ENTRY MODULE CARD -->
+        <div class="dashboard-interactive-tile" style="cursor: pointer; background-color: #ffffff; border: 1px solid #edebe9; border-radius: 4px; transition: background-color 0.1s;" @onclick='() => NavigateToPage("documents")'>
+            <div style="padding: 16px; display: flex; flex-direction: column; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 8px; margin-bottom: 12px;">
+                    <span style="font-weight: 700; color: #201f1e; font-size: 0.78rem;">📄 Immutable Document Ledger</span>
                     <FluentBadge Appearance="Appearance.Neutral">Read Only</FluentBadge>
                 </div>
-                <div class="text-muted text-caption truncate-text" style="font-size: 0.68rem;">Surfaces read-only Quotations, Invoices, and master records straight from Sage X3.</div>
-            </FluentCard>
+                <div style="border: 1px solid #edebe9; border-radius: 4px; padding: 8px; background-color: #f8f9fa; color: #605e5c; font-size: 0.72rem; line-height: 1.4; margin-bottom: 12px; flex-grow: 1;">
+                    Surfaces unmodifiable Quotations, Invoices, and master account files directly from the Sage X3 secure repository.
+                </div>
+                <div style="color: #605e5c; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Bypasses write data tables inside local Outlook pane limits.
+                </div>
+            </div>
         </div>
 
     </div>
 </div>
+
+<style>
+    .dashboard-interactive-tile:hover {
+        background-color: #f3f2f1 !important;
+        border-color: #a19f9d !important;
+    }
+</style>
+
 @code {
     private void NavigateToPage(string targetPageUrl)
     {
@@ -66,4 +122,3 @@
         Nav.NavigateTo($"/{targetPageUrl}{currentQuery}");
     }
 }
-

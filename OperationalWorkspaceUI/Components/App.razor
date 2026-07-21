@@ -6,27 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
 
-    <!-- Framework Stylesheet Mappings -->
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
+    <!-- Mandatory Scoped Style Bundle Engine Identifier Mappings -->
+    <link rel="stylesheet" href="OperationalWorkspaceUI.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
 
-    <!-- Office.js Context Hooks -->
+    <!-- FIX: Explicitly mapped using the type-safe framework design theme parameters -->
+    <FluentDesignTheme StorageName="theme"
+                       Mode="@Microsoft.FluentUI.AspNetCore.Components.DesignThemeModes.Light"
+                       CustomColor="blue" />
+
+    <!-- Outlook Add-in Platform Hooks Handshake -->
     <script src="https://microsoft.com" type="text/javascript"></script>
     <script src="js/officeBridge.js"></script>
 
-    <!-- Injects Fluent UI design system stylesheet dependencies natively -->
     <HeadOutlet />
 </head>
 
 <body>
-    <!-- Loads Microsoft core component parameters -->
-    <Routes  />
+    <Routes />
 
-    <!-- Blazor Server SignalR Engine Bundle -->
+    <!-- Core Interactive Server Blazor Compilation Scripts -->
     <script src="_framework/blazor.web.js"></script>
-
-    <!-- FIX: Mandatory Web Components script bundle initializing Fluent UI layouts -->
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 </body>
 
