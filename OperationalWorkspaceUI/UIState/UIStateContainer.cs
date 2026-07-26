@@ -7,23 +7,26 @@ namespace OperationalWorkspaceUI.UIState;
 
 public class UIStateContainer
 {
-    // Centralized memory tracking primitives
+    // Centralized Memory Tracking Primitives
     public bool IsAuthenticated { get; private set; }
     public string SenderEmail { get; private set; } = string.Empty;
     public string SenderName { get; private set; } = string.Empty;
     public string ActiveUserEmail { get; private set; } = string.Empty;
-    public string UserRoleScope { get; private set; } = "Sales;Consultant"; // Fallback development scope
+    public string UserRoleScope { get; private set; } = "Sales;Consultant";
 
-    // Cached Customer 360 payload model state
+    // Cached Customer 360 Payload Model State
     public WorkspaceContextResponse? CurrentContextResponse { get; private set; }
 
-    public event Action? OnStateChanged;
+    // STABILIZATION REFACTOR: Split monolithic global event channel into dedicated domain streams
+    public event Action? AuthenticationChanged;
+    public event Action? WorkspaceContextChanged;
+    public event Action? ActiveUserChanged;
 
     public void SetAuthenticatedState(bool isAuthenticated)
     {
         if (IsAuthenticated == isAuthenticated) return;
         IsAuthenticated = isAuthenticated;
-        NotifyStateChanged();
+        NotifyAuthenticationChanged();
     }
 
     public void SetIdentityContext(string senderEmail, string senderName, string activeUserEmail)
@@ -31,7 +34,7 @@ public class UIStateContainer
         SenderEmail = senderEmail?.Trim() ?? string.Empty;
         SenderName = senderName?.Trim() ?? string.Empty;
         ActiveUserEmail = activeUserEmail?.Trim() ?? string.Empty;
-        NotifyStateChanged();
+        NotifyWorkspaceContextChanged();
     }
 
     public void SetUserRoleScope(string roleScope)
@@ -39,22 +42,25 @@ public class UIStateContainer
         if (!string.IsNullOrWhiteSpace(roleScope))
         {
             UserRoleScope = roleScope.Trim();
-            NotifyStateChanged();
+            NotifyActiveUserChanged();
         }
     }
 
     public void SetWorkspaceContextResponse(WorkspaceContextResponse response)
     {
         CurrentContextResponse = response;
-        NotifyStateChanged();
+        NotifyWorkspaceContextChanged();
     }
 
     /// <summary>
-    /// Phase 2 Audit Resolution: Batches multi-property session updates into 
-    /// a single atomic refresh signal to prevent wasteful Blazor UI repaints.
+    /// Batches multi-property session updates into atomic domain triggers 
+    /// to completely eliminate infinite layout rendering feedback loops.
     /// </summary>
     public void UpdateSession(bool isAuthenticated, string senderEmail, string senderName, string activeUserEmail, string? roleScope, WorkspaceContextResponse? response)
     {
+        bool authStatusChanged = IsAuthenticated != isAuthenticated;
+        bool userContextChanged = ActiveUserEmail != activeUserEmail?.Trim() || UserRoleScope != roleScope?.Trim();
+
         IsAuthenticated = isAuthenticated;
         SenderEmail = senderEmail?.Trim() ?? string.Empty;
         SenderName = senderName?.Trim() ?? string.Empty;
@@ -67,7 +73,17 @@ public class UIStateContainer
 
         CurrentContextResponse = response;
 
-        NotifyStateChanged(); // Fires exactly once for the entire update batch
+        // Fire targeted atomic events exactly once per transaction loop scope
+        if (authStatusChanged)
+        {
+            NotifyAuthenticationChanged();
+        }
+        if (userContextChanged)
+        {
+            NotifyActiveUserChanged();
+        }
+
+        NotifyWorkspaceContextChanged();
     }
 
     public void ClearSessionStore()
@@ -77,8 +93,14 @@ public class UIStateContainer
         SenderName = string.Empty;
         ActiveUserEmail = string.Empty;
         CurrentContextResponse = null;
-        NotifyStateChanged();
+
+        NotifyAuthenticationChanged();
+        NotifyActiveUserChanged();
+        NotifyWorkspaceContextChanged();
     }
 
-    private void NotifyStateChanged() => OnStateChanged?.Invoke();
+    // Isolated Domain Telemetry Event Triggers
+    private void NotifyAuthenticationChanged() => AuthenticationChanged?.Invoke();
+    private void NotifyWorkspaceContextChanged() => WorkspaceContextChanged?.Invoke();
+    private void NotifyActiveUserChanged() => ActiveUserChanged?.Invoke();
 }

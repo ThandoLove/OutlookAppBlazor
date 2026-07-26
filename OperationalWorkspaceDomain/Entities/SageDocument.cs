@@ -47,5 +47,5 @@ public class SageDocument
 
     public bool IsActionableFinancialDocument => Type == "Invoice" && Status != "Paid" && Amount > 0;
 
-    public string CustomerId { get; set; }
+    public string CustomerId { get; set; } = string.Empty;
 }

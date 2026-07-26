@@ -28,7 +28,14 @@ public class TicketCreationException : WorkspaceException
 public class SageAuthenticationException : WorkspaceException
 {
     public SageAuthenticationException(string reason)
-        : base($"Syracuse Identity Provider handshake failure: {reason}") { }
+        : base($"Syracuse Identity Provider handshake failure: {reason}")
+    {
+    }
+
+    public SageAuthenticationException(string reason, Exception innerException)
+        : base($"Syracuse Identity Provider handshake failure: {reason}", innerException)
+    {
+    }
 }
 
 public class GraphQLQueryException : WorkspaceException

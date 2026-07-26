@@ -1,7 +1,6 @@
 ﻿@page "/tasks"
 @using OperationalWorkspaceUI.UIState
 @using OperationalWorkspaceUI.UIServices
-
 @using OperationalWorkspaceUI.Components.Shared
 @using OperationalWorkspaceApplication.Requests.TicketRequest
 @inject UIStateContainer StateContainer
@@ -12,12 +11,12 @@
 
 <div class="tasks-panel p-2">
     <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-        <h6 class="m-0 fw-bold text-dark text-header" style="font-size: var(--font-size-header, 0.9rem);">📋 Tasks & Incident Entry</h6>
-        <button class="btn btn-outline-secondary btn-sm py-0 px-2 text-small" style="font-size: var(--font-size-small, 0.72rem);" @onclick="GoBack">Back</button>
+        <h6 class="m-0 fw-bold text-dark text-header">📋 Tasks & Incident Entry</h6>
+        <button class="btn btn-outline-secondary btn-sm py-0 px-2 text-small" @onclick="GoBack">Back</button>
     </div>
 
     <!-- Protected Action Security Rule Block Validation -->
-    @if (StateContainer.UserRoleScope.Contains("Admin") || StateContainer.UserRoleScope.Contains("Sales") || StateContainer.UserRoleScope.Contains("Consultant"))
+    @if (StateContainer.UserRoleScope != null && (StateContainer.UserRoleScope.Contains("Admin") || StateContainer.UserRoleScope.Contains("Sales") || StateContainer.UserRoleScope.Contains("Consultant")))
     {
         <div class="card p-3 border shadow-sm bg-white mb-3">
             <div class="form-group mb-2">
@@ -28,7 +27,6 @@
                 <label class="small fw-bold text-muted mb-1 text-caption">Operational Elaborations</label>
                 <textarea class="form-control form-control-sm text-small" placeholder="Detailed notes..." @bind="_model.Description" rows="3"></textarea>
             </div>
-
             <!-- Consolidated Feedback State Handler Reuses your Shared components -->
             @if (_model.IsSubmitting || !string.IsNullOrEmpty(_uiActionErrorAlert))
             {
@@ -39,13 +37,12 @@
 
             @if (!string.IsNullOrEmpty(_model.SuccessFeedbackMessage))
             {
-                <div class="alert alert-success p-2 small mb-2 text-small" style="font-size: var(--font-size-small, 0.72rem); border-radius: 4px;">
+                <div class="alert alert-success p-2 small mb-2 text-small" style="border-radius: 4px;">
                     <strong>✔ Registered:</strong> @_model.SuccessFeedbackMessage
                 </div>
             }
 
             <button class="btn btn-primary btn-sm w-100 fw-bold text-small mt-1"
-                    style="font-size: 0.75rem;"
                     @onclick="SubmitTaskForm"
                     disabled="@(_model.IsSubmitting || string.IsNullOrWhiteSpace(_model.Subject))">
                 <span>🔒 Securely Post to Sage Registry</span>
@@ -65,8 +62,9 @@
 
     protected override void OnInitialized()
     {
-        // Subscribe to state notifications cleanly to keep data fields synchronized
-        StateContainer.OnStateChanged += HandleStateChanged;
+        // STABILIZATION REFACTOR: Subscribe to targeted events to fix the CS0103 OnStateChanged compilation drop
+        StateContainer.WorkspaceContextChanged += HandleStateChanged;
+        StateContainer.ActiveUserChanged += HandleStateChanged;
     }
 
     private void HandleStateChanged()
@@ -89,10 +87,8 @@
             StateContainer.ActiveUserEmail
         );
 
-        // Execute asynchronous call wrapping responses inside Result pattern
-        var res = await ApiService.SubmitIncidentTicketAsync(cmd, "MOCK_USER_TOKEN");
+        var res = await ApiService.SubmitIncidentTicketAsync(cmd, string.Empty);
 
-        // FIX: Verify result success status AND extract business values out of .Value payload safely
         if (res != null && res.IsSuccess && res.Value != null)
         {
             var payload = res.Value;
@@ -103,22 +99,20 @@
         }
         else
         {
-            // Read business-level error feedback text fields straight from the failure contract
             _uiActionErrorAlert = res?.ErrorMessage ?? "Unable to log the requested incident ticket. Please try again.";
         }
 
         _model.IsSubmitting = false;
     }
-
     private void GoBack() => Nav.NavigateTo($"/dashboard{Nav.ToAbsoluteUri(Nav.Uri).Query}");
 
     public void Dispose()
     {
-        // Phase 4 Resolution: Detach listener hook to completely eliminate memory leak vectors
-        StateContainer.OnStateChanged -= HandleStateChanged;
+        // STABILIZATION REFACTOR: Safe cleanup of isolated event subscription channels
+        StateContainer.WorkspaceContextChanged -= HandleStateChanged;
+        StateContainer.ActiveUserChanged -= HandleStateChanged;
     }
 
-    // Isolated tracking container class mapping layout fields
     public class TicketSubmissionViewModel
     {
         public string Subject { get; set; } = string.Empty;
@@ -126,4 +120,4 @@
         public bool IsSubmitting { get; set; } = false;
         public string SuccessFeedbackMessage { get; set; } = string.Empty;
     }
-}
+} 

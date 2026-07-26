@@ -1,23 +1,99 @@
 @using OperationalWorkspaceUI.UIState
 @inject UIStateContainer StateContainer
+@implements IDisposable
 
-<div class="workspace-top-banner">
+@if (StateContainer.IsAuthenticated)
+{
+    <div class="workspace-top-banner" role="banner">
 
-    <!-- Left Section Brand Plate -->
-    <div class="d-flex align-items-center gap-2">
-        <span class="fw-bold text-dark text-small" style="letter-spacing: -0.1px;">Sage X3 Workspace</span>
-        <FluentBadge Appearance="Appearance.Neutral" class="status-blink-node text-caption px-1.5 py-0.5 text-white" style="background-color: var(--sage-alert-success); border-radius: 4px;">
-            ● Connected
-        </FluentBadge>
-    </div>
-
-    
-    <div class="d-flex align-items-center gap-2">
-        <div class="text-end lh-1">
-            <div class="fw-bold text-dark" style="font-size: 0.72rem;">John Smith</div>
-            <small class="text-muted d-block text-caption">Sales Rep</small>
+        <!-- Left Axis Section: Brand Plate Indicator Node -->
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-header-brand">Sage X3 Workspace</span>
+            <FluentBadge Appearance="Appearance.Neutral" class="status-blink-node topbar-connected-badge">
+                ● Connected
+            </FluentBadge>
         </div>
-        <FluentPersona Initials="JS" Presence="PresenceStatus.Available" PresenceSize="PresenceBadgeSize.Small" />
-    </div>
 
-</div>
+        <!-- Right Axis Section: Active Employee Profile Persona Block -->
+        <div class="d-flex align-items-center gap-2">
+            <div class="text-end lh-1">
+                <div class="fw-bold text-dark topbar-profile-name">
+                    @(string.IsNullOrWhiteSpace(StateContainer.ActiveUserEmail) ? "Sage User" : StateContainer.ActiveUserEmail.Split('@')[0])
+                </div>
+                <small class="text-muted d-block text-caption topbar-role-label">
+                    @(StateContainer.UserRoleScope != null && StateContainer.UserRoleScope.Contains("Admin") ? "Administrator" : "Operational User")
+                </small>
+            </div>
+            <FluentPersona Initials="@GetProfileInitials()" Presence="PresenceStatus.Available" PresenceSize="PresenceBadgeSize.Small" />
+        </div>
+
+    </div>
+}
+<style>
+    /* Scope Isolation Stylesheet Realignment (Zero Inline CSS Text Overrides) */
+    .text-header-brand {
+        font-weight: 700;
+        color: #201f1e;
+        font-size: var(--font-size-small, 0.72rem);
+        letter-spacing: -0.1px;
+    }
+
+    .topbar-connected-badge {
+        background-color: var(--sage-alert-success, #107c41) !important;
+        color: #ffffff !important;
+        font-size: var(--font-size-caption, 0.65rem) !important;
+        padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px) !important;
+        border-radius: 4px !important;
+        border: none !important;
+    }
+
+    .topbar-profile-name {
+        font-size: 0.72rem;
+    }
+
+    .topbar-role-label {
+        font-size: var(--font-size-caption, 0.65rem);
+    }
+</style>
+@code {
+    protected override void OnInitialized()
+    {
+        // Senior Engineer Architecture Loop: Subscribe strictly to targeted state domain streams to kill repaint loops
+        StateContainer.AuthenticationChanged += RefreshTopbarLayoutView;
+        StateContainer.ActiveUserChanged += RefreshTopbarLayoutView;
+    }
+
+    private void RefreshTopbarLayoutView()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetProfileInitials()
+    {
+        if (string.IsNullOrWhiteSpace(StateContainer.ActiveUserEmail))
+        {
+            return "X3";
+        }
+
+        try
+        {
+            var userSegment = StateContainer.ActiveUserEmail.Split('@')[0];
+            if (userSegment.Contains('.'))
+            {
+                var names = userSegment.Split('.');
+                return (names[0][0].ToString() + names[1][0].ToString()).ToUpper();
+            }
+            return userSegment.Substring(0, Math.Min(2, userSegment.Length)).ToUpper();
+        }
+        catch
+        {
+            return "JS";
+        }
+    }
+    public void Dispose()
+    {
+        // Safe lifecycle unsubscription completely prevents lingering background memory leaks
+        StateContainer.AuthenticationChanged -= RefreshTopbarLayoutView;
+        StateContainer.ActiveUserChanged -= RefreshTopbarLayoutView;
+    }
+}

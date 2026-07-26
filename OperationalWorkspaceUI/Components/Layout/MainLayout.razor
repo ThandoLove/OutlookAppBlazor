@@ -6,43 +6,42 @@
 @inject IConfiguration Config
 @implements IDisposable
 
-@{
-    // AUDIT CHECK: Safely extract environment mock toggle flags straight from the appsettings tree
-    bool useMocks = Config.GetValue<bool>("SageX3Settings:UseMocks");
-    bool useMockAuth = Config.GetValue<bool>("SageX3Settings:UseMockAuth");
-    
-    // The workspace shell unlocks if the user completes SSO login OR if local developer mock mode is active
-    bool allowWorkspaceAccess = StateContainer.IsAuthenticated || useMocks || useMockAuth;
-}
-
-@if (!allowWorkspaceAccess)
+@if (!_appReady)
 {
-    <!-- SEQUENCE 1: CLEAN STANDALONE LOGIN GATEWAY LAYER (No sidebars or banners allowed) -->
-    <div class="login-canvas-container">
+    <!-- SEQUENCE 1: SENIOR ENGINEER BLUEPRINT INITIAL LOADING SCREEN FRAME -->
+    <div class="login-canvas-container d-flex flex-column align-items-center justify-content-center">
+        <FluentProgressRing></FluentProgressRing>
+        <span class="text-caption mt-2">Initializing Secure Enterprise Shell...</span>
+    </div>
+}
+else if (!StateContainer.IsAuthenticated)
+{
+    <!-- SEQUENCE 2: CLEAN STANDALONE LOGIN GATEWAY PANE (No outer rails or sidebars present) -->
+    <div class="login-canvas-container"  aria-label="Sage X3 Secure Gateway Entry">
         @Body
     </div>
 }
 else
 {
-    <!-- SEQUENCE 2: PRODUCTION BLUEPRINT MULTI-PANEL SPLIT COCKPIT WINDOW VIEW -->
+    <!-- SEQUENCE 3: VERIFIED WORKSPACE MULTI-PANEL SPLIT COCKPIT WINDOW VIEW -->
     <div class="workspace-container-frame">
         
-        
+        <!-- Persistent Top Header Platform Banner Layout Anchor (Locked Post-Auth) -->
         <WorkspaceTopbar />
 
-        <!-- CORE CONTENT MATRIX GRID PLATFORM -->
+        <!-- CORE CONTENT INTERFACE SYSTEM PLATFORM -->
         <div class="workspace-inner-platform">
             
-            <!-- Left Axis Column Navigation Sidebar (Constant layout shell rail) -->
+            <!-- Left Axis Column Navigation Sidebar Rail Container (Locked Post-Auth) -->
             <NavigationSidebar />
 
-            <!-- Right Core Functional Presentation Workspace Area -->
+            <!-- Right Core Functional Presentation Workspace Canvas Stream -->
             <div class="d-flex flex-column flex-grow-1 min-w-0">
                 
-                <!-- Conditional External Email Sender Context Hub Component -->
+                <!-- Secondary Contextual Insights Row Component Wrapper Container -->
                 <CustomerContextHost />
 
-                <!-- Dynamic Sub-Page Viewport Canvas Cell (Only this area swaps page documents dynamically) -->
+                <!-- Dynamic Viewport Area Node Cell (ONLY this section re-routes sub-pages) -->
                 <main class="workspace-scroll-viewport" role="main">
                     @Body
                 </main>
@@ -55,21 +54,59 @@ else
 }
 
 @code {
-    protected override void OnInitialized()
+    private bool _appReady = false;
+
+    protected override async Task OnInitializedAsync()
     {
-        // Subscribe to global UI state container mutations to force responsive layout refreshes
-        StateContainer.OnStateChanged += SynchronizeCoreLayoutStateView;
+        // STABILIZATION REFACTOR: Subscribe strictly to targeted authorization events to kill render loops
+        StateContainer.AuthenticationChanged += SynchronizeCoreLayoutStateView;
+
+        // Execute unified structural configuration checks safely on boot time
+        await ProcessStartupConfigurationCheck();
+    }
+
+    private async Task ProcessStartupConfigurationCheck()
+    {
+        try
+        {
+            // Extract local appsettings development configuration toggle primitives
+            bool useMocks = Config.GetValue<bool>("SageX3Settings:UseMocks");
+            bool useMockAuth = Config.GetValue<bool>("SageX3Settings:UseMockAuth");
+
+            if (useMocks || useMockAuth)
+            {
+                // Instant configuration seed bypass if local testing is active
+                StateContainer.UpdateSession(
+                    isAuthenticated: true,
+                    senderEmail: "finance.manager@acmecorp.com",
+                    senderName: "Jane Smith",
+                    activeUserEmail: "admin.manager@yourcompany.com",
+                    roleScope: "Admin;Finance;Sales;Consultant",
+                    response: null
+                );
+            }
+        }
+        catch
+        {
+            // Fail silent fallback guarantees production stability remains fully intact
+        }
+        finally
+        {
+            // Drop loading protection barriers natively
+            _appReady = true;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private void SynchronizeCoreLayoutStateView()
     {
-        // Safe cross-thread invocation forcing UI thread synchronization
+        // Safe cross-thread invocation forcing UI layout pass recalculations
         InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        // Safe lifecycle unsubscription completely prevents background memory leak connections
-        StateContainer.OnStateChanged -= SynchronizeCoreLayoutStateView;
+        // Safe lifestyle unsubscription completely prevents lingering memory leaks
+        StateContainer.AuthenticationChanged -= SynchronizeCoreLayoutStateView;
     }
 }

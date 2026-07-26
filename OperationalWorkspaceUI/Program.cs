@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.UIState;
 using OperationalWorkspaceUI.UIServices;
@@ -10,49 +11,59 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Session State Container and Fluent UI Layout Core Requirements
-builder.Services.AddScoped<UIStateContainer>();
+// Senior Engineer Refactor Pass: Clear diagnostic pipeline logging engines
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// 1. Session State Container Core Lifetime Realignment (Section 1)
+// STABILIZATION REFACTOR: Set UIStateContainer as a Singleton to prevent state erasure across page route transitions
+builder.Services.AddSingleton<UIStateContainer>();
 builder.Services.AddFluentUIComponents();
 builder.Services.AddScoped<GlobalState>();
 
-// 2. AUDIT VERIFIED ENVIRONMENT SECURITY GUARD
+// 2. Authentication and Presentation Workflow Orchestrator Registrations
+builder.Services.AddScoped<AuthenticationService>();
+
+// 3. Environmental Mock/Live Signal Variable Extractions
 bool useMocks = builder.Configuration.GetValue<bool>("SageX3Settings:UseMocks");
 bool useMockAuth = builder.Configuration.GetValue<bool>("SageX3Settings:UseMockAuth");
 
+// Section 8 Resolution: Core Security Guard Verification Boundary Barrier Loop Check
 if (!builder.Environment.IsDevelopment() && (useMocks || useMockAuth))
 {
-    throw new InvalidOperationException("Mock mode cannot run outside Development.");
+    throw new InvalidOperationException("Critical Security Violation: Execution parameters mapping to Mock layers are disabled inside non-Development hosting environments.");
 }
 
-// 3. FIX: Dynamic Dependency Injection Toggles Between Live and Mock Services Neatly
+// 4. DYNAMIC DEPENDENCY INJECTION ENGINE DECOUPLING INTERFACE MATRIX
 if (useMocks)
 {
-    // Registers the permanent local mock service implementation for rapid offline testing
+    // Register the local mock data provider class for offline development checking
     builder.Services.AddScoped<IWorkspaceApiService, MockWorkspaceApiService>();
 }
 else
 {
-    // Registers the live production network service connecting straight to your ERP endpoints
+    // Register the live production endpoint service layer
     builder.Services.AddHttpClient<IWorkspaceApiService, WorkspaceApiService>(client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["SageX3Settings:BaseUrl"] ?? "https://yourcompany.com");
+        // FIX: Added null-coalescing operator declaration to satisfy C# compiler nullable reference checks completely
+        string hostUrl = builder.Configuration["SageX3Settings:BaseUrl"] ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(hostUrl))
+        {
+            throw new InvalidOperationException("Configuration Failure: Base address string 'SageX3Settings:BaseUrl' is undefined.");
+        }
+        client.BaseAddress = new Uri(hostUrl);
     });
 }
 
+// 5. Initialize Server Side Interactive Blazor Component Services
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
 
-if (app.Environment.IsProduction())
-{
-    Console.WriteLine("Running in PRODUCTION mode.");
-}
-else
-{
-    Console.WriteLine($"Running in {app.Environment.EnvironmentName} mode.");
-}
-
+// 6. Map Middleware Pipeline Constraints Handlers
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -60,9 +71,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); // Exposes root wwwroot CSS bundles natively to clear out 404 network errors
 app.UseAntiforgery();
 
+// 7. Route and Instantiates Core Blazor WebSocket Circuits
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

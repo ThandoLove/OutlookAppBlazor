@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OperationalWorkspace.Infrastructure.InfraExceptions;
+namespace OperationalWorkspaceInfrastructure.InfraExceptions;
 
 public abstract class InfrastructureException : Exception
 {

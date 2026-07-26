@@ -1,11 +1,11 @@
-﻿using OperationalWorkspace.Infrastructure.InfraExceptions;
+﻿using OperationalWorkspaceInfrastructure.InfraExceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OperationalWorkspace.Infrastructure.InfraExceptions;
+namespace OperationalWorkspaceInfrastructure.InfraExceptions;
 public class NetworkException : InfrastructureException
 {
     public NetworkException(string operation, string endpoint, Exception inner)
